@@ -1,142 +1,247 @@
-# Minton - Modular Monolith Architecture
+# Mintonn Backend API
 
-## Cấu trúc dự án
+Backend API cho ứng dụng Mintonn được xây dựng với ExpressJS, MongoDB và JWT authentication.
 
-Dự án được thiết kế theo kiến trúc **Modular Monolith** với **Domain-Driven Design (DDD)** và **Clean Architecture**.
+## 🚀 Tính năng
 
-### 📁 Cấu trúc thư mục
+- **Authentication & Authorization**: JWT với cookie, role-based access control
+- **User Management**: Đăng ký, đăng nhập, quản lý profile, đổi mật khẩu
+- **Security**: Rate limiting, helmet, CORS, input validation
+- **Modular Architecture**: Kiến trúc modular monolith dễ mở rộng
+- **Error Handling**: Xử lý lỗi toàn cục với logging
+
+## 🛠️ Công nghệ sử dụng
+
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB với Mongoose
+- **Authentication**: JWT (JSON Web Tokens)
+- **Validation**: express-validator
+- **Security**: bcryptjs, helmet, cors
+- **Development**: nodemon
+
+## 📁 Cấu trúc dự án
 
 ```
-Minton/
-├── Minton/                    # API Layer (Presentation)
-│   ├── Controllers/          # API Controllers
-│   ├── Program.cs           # Application startup
-│   └── appsettings.json     # Configuration
-│
-├── Minton.Application/       # Application Layer
-│   ├── Account/             # Account Module
-│   │   ├── Commands/        # CQRS Commands
-│   │   ├── Queries/         # CQRS Queries
-│   │   ├── Handlers/        # Command/Query Handlers
-│   │   ├── Responses/       # DTOs
-│   │   └── Mappers/         # Object Mappers
-│   └── Helpers/             # Shared utilities
-│
-├── Minton.Core/             # Domain Layer
-│   ├── Domain/              # Domain Layer
-│   │   ├── Account/         # Account Domain
-│   │   │   ├── Entities/    # Domain Entities
-│   │   │   ├── ValueObjects/# Value Objects
-│   │   │   ├── Repositories/# Repository Interfaces
-│   │   │   └── Services/    # Domain Services
-│   │   └── Shared/          # Shared Domain
-│   │       ├── BaseEntity.cs
-│   │       ├── ValueObject.cs
-│   │       ├── IRepository.cs
-│   │       └── DomainException.cs
-│
-├── Minton.Infrastructure/   # Infrastructure Layer
-│   ├── Account/             # Account Infrastructure
-│   │   ├── Repositories/    # Repository Implementations
-│   │   └── Services/        # Domain Service Implementations
-│   └── Context/             # Database Context
-│
-└── Minton.Migrations/       # Database Migrations
+Backend/
+├── config/
+│   └── database.js          # Cấu hình MongoDB
+├── middleware/
+│   ├── auth.js              # JWT authentication middleware
+│   ├── errorHandler.js      # Global error handling
+│   └── validate.js          # Input validation
+├── modules/
+│   ├── auth/
+│   │   ├── auth.controller.js   # Auth controller
+│   │   ├── auth.service.js      # Auth business logic
+│   │   └── auth.routes.js       # Auth routes
+│   └── user/
+│       └── user.model.js        # User model
+├── server.js                # Entry point
+├── package.json
+└── env.example
 ```
 
-## 🏗️ Kiến trúc
+## 🚀 Cài đặt và chạy
 
-### 1. **Domain Layer** (Minton.Core)
-- **Entities**: Business objects với identity và lifecycle
-- **Value Objects**: Immutable objects không có identity
-- **Domain Services**: Business logic phức tạp
-- **Repository Interfaces**: Contracts cho data access
+### Phương pháp 1: Chạy trực tiếp (Development)
 
-### 2. **Application Layer** (Minton.Application)
-- **Commands/Queries**: CQRS pattern
-- **Handlers**: Business logic orchestration
-- **Responses**: DTOs cho API responses
-- **Mappers**: Object mapping
+#### Yêu cầu hệ thống
+- Node.js (v16+)
+- MongoDB (v4.4+)
+- npm hoặc yarn
 
-### 3. **Infrastructure Layer** (Minton.Infrastructure)
-- **Repository Implementations**: Data access logic
-- **Domain Service Implementations**: External service integrations
-- **Database Context**: Entity Framework configuration
+#### Bước 1: Clone và cài đặt dependencies
+```bash
+cd Backend
+npm install
+```
 
-### 4. **API Layer** (Minton)
-- **Controllers**: HTTP endpoints
-- **Dependency Injection**: Service registration
-- **Configuration**: App settings
+#### Bước 2: Cấu hình môi trường
+```bash
+# Copy file env.example thành .env
+cp env.example .env
 
-## 🔧 Tính năng chính
+# Chỉnh sửa các biến môi trường trong .env
+```
 
-### ✅ **Modular Design**
-- Mỗi domain (Account, Rating, etc.) có module riêng
-- Clear boundaries giữa các modules
-- Dễ dàng mở rộng và maintain
+#### Bước 3: Khởi động MongoDB
+```bash
+# Khởi động MongoDB service
+mongod
+```
 
-### ✅ **Domain-Driven Design**
-- Rich domain models với business logic
-- Value objects cho validation
-- Domain services cho complex operations
+#### Bước 4: Chạy ứng dụng
+```bash
+# Development mode
+npm run dev
 
-### ✅ **Clean Architecture**
-- Dependency Inversion Principle
-- Separation of concerns
-- Testable architecture
+# Production mode
+npm start
+```
 
-### ✅ **CQRS Pattern**
-- Commands cho write operations
-- Queries cho read operations
-- MediatR implementation
+#### Bước 5: Tạo dữ liệu mẫu (Optional)
+```bash
+# Tạo users mẫu cho development
+npm run seed
+```
 
-### ✅ **Validation & Error Handling**
-- Domain-level validation
-- Proper error responses
-- Business rule enforcement
+### Phương pháp 2: Sử dụng Docker (Khuyến nghị)
 
-## 🚀 Cách chạy
+#### Yêu cầu hệ thống
+- Docker
+- Docker Compose
 
-1. **Restore packages**:
-   ```bash
-   dotnet restore
-   ```
+#### Bước 1: Chạy với Docker Compose
+```bash
+cd Backend
+docker-compose up -d
+```
 
-2. **Update database**:
-   ```bash
-   dotnet ef database update --project Minton.Migrations --startup-project Minton
-   ```
+#### Bước 2: Truy cập ứng dụng
+- Backend API: http://localhost:5000
+- MongoDB: mongodb://localhost:27017
+- Mongo Express (Admin UI): http://localhost:8081 (admin/admin123)
 
-3. **Run application**:
-   ```bash
-   cd Minton
-   dotnet run
-   ```
+#### Bước 3: Dừng services
+```bash
+docker-compose down
+```
 
-4. **Access Swagger UI**:
-   ```
-   http://localhost:5000/swagger
-   ```
+#### Bước 4: Xem logs
+```bash
+# Xem logs của tất cả services
+docker-compose logs
 
-## 📋 API Endpoints
+# Xem logs của service cụ thể
+docker-compose logs backend
+docker-compose logs mongodb
+```
 
-### Account Module
-- `POST /api/Account/create-user` - Tạo user mới
-- `GET /api/Account/user/{id}` - Lấy thông tin user
+## 🔧 Cấu hình môi trường
 
-## 🔄 Migration từ cấu trúc cũ
+Tạo file `.env` với các biến sau:
 
-### Những thay đổi chính:
-1. **Domain Entities**: User entity với business logic
-2. **Value Objects**: Email validation
-3. **Domain Services**: UserDomainService cho business operations
-4. **Modular Structure**: Account module riêng biệt
-5. **Proper Error Handling**: Domain exceptions và validation
-6. **Clean Dependencies**: Dependency injection đúng cách
+```env
+# Server Configuration
+PORT=5000
+NODE_ENV=development
 
-### Lợi ích:
-- ✅ **Maintainability**: Code dễ maintain và mở rộng
-- ✅ **Testability**: Dễ dàng unit test
-- ✅ **Scalability**: Có thể tách thành microservices sau này
-- ✅ **Business Logic**: Business rules được enforce ở domain level
-- ✅ **Type Safety**: Strong typing và validation
+# MongoDB Configuration
+MONGODB_URI=mongodb://localhost:27017/mintonn
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_EXPIRES_IN=7d
+JWT_COOKIE_EXPIRES_IN=7
+
+# Security
+BCRYPT_ROUNDS=12
+```
+
+## 📚 API Endpoints
+
+### Authentication
+
+#### Public Routes
+- `POST /api/auth/register` - Đăng ký người dùng mới
+- `POST /api/auth/login` - Đăng nhập
+- `POST /api/auth/forgotpassword` - Quên mật khẩu
+- `PUT /api/auth/resetpassword/:resettoken` - Đặt lại mật khẩu
+- `GET /api/auth/verify-email/:token` - Xác thực email
+
+#### Protected Routes (Yêu cầu JWT token)
+- `GET /api/auth/me` - Lấy thông tin người dùng hiện tại
+- `PUT /api/auth/updateprofile` - Cập nhật profile
+- `PUT /api/auth/changepassword` - Đổi mật khẩu
+- `POST /api/auth/logout` - Đăng xuất
+- `POST /api/auth/verify-email/generate` - Tạo token xác thực email
+
+### Health Check
+- `GET /health` - Kiểm tra trạng thái server
+
+## 🔐 Authentication
+
+### JWT Token
+- Token được lưu trong HTTP-only cookie
+- Hỗ trợ cả cookie và Authorization header
+- Token có thời hạn 7 ngày (có thể cấu hình)
+
+### Role-based Access Control
+- **user**: Người dùng thông thường
+- **moderator**: Người kiểm duyệt
+- **admin**: Quản trị viên
+
+## 📝 Validation
+
+### User Registration
+- First name, last name: 2-50 ký tự
+- Email: Định dạng email hợp lệ
+- Password: Tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt
+
+### Profile Update
+- Phone: Định dạng số điện thoại hợp lệ
+- Gender: Chọn từ danh sách có sẵn
+
+## 🚨 Security Features
+
+- **Rate Limiting**: Giới hạn 100 requests/15 phút cho mỗi IP
+- **Helmet**: Bảo mật HTTP headers
+- **CORS**: Cross-origin resource sharing với credentials
+- **Input Validation**: Sanitize và validate tất cả input
+- **Password Hashing**: Bcrypt với 12 rounds
+- **Account Locking**: Khóa tài khoản sau 5 lần đăng nhập thất bại
+
+## 🧪 Testing
+
+```bash
+# Chạy tests
+npm test
+
+# Chạy tests với coverage
+npm run test:coverage
+```
+
+## 📊 Database Schema
+
+### User Model
+- Thông tin cơ bản: firstName, lastName, email, password
+- Role và trạng thái: role, isActive, isEmailVerified
+- Profile: avatar, phone, dateOfBirth, gender, address
+- Preferences: notifications, language, timezone
+- Security: loginAttempts, lockUntil, passwordResetToken
+
+## 🔄 Error Handling
+
+- **Validation Errors**: 400 Bad Request
+- **Authentication Errors**: 401 Unauthorized
+- **Authorization Errors**: 403 Forbidden
+- **Not Found**: 404 Not Found
+- **Server Errors**: 500 Internal Server Error
+
+## 🚀 Deployment
+
+### Production Checklist
+- [ ] Set `NODE_ENV=production`
+- [ ] Configure secure MongoDB connection
+- [ ] Use strong JWT_SECRET
+- [ ] Enable HTTPS
+- [ ] Configure proper CORS origins
+- [ ] Set up logging và monitoring
+- [ ] Configure backup strategy
+
+## 🤝 Contributing
+
+1. Fork dự án
+2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Mở Pull Request
+
+## 📄 License
+
+Dự án này được phân phối dưới MIT License. Xem file `LICENSE` để biết thêm chi tiết.
+
+## 📞 Support
+
+Nếu có vấn đề hoặc câu hỏi, vui lòng tạo issue trong repository hoặc liên hệ team development.
