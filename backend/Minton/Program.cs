@@ -1,0 +1,44 @@
+using Microsoft.EntityFrameworkCore;
+using Minton.Application.Account.Mappers;
+using Minton.Application.Account.Services;
+using Minton.Core.Account.Repositories;
+using Minton.Core.Account.Services;
+using Minton.Infrastructure.Account.Repositories;
+using Minton.Infrastructure.Account.Services;
+using Minton.Infrastructure.Context;
+
+var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<DatabaseContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+    x => x.MigrationsAssembly("Minton.Migrations")
+));
+
+
+// Register Account module services
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserDomainService, UserDomainService>();
+builder.Services.AddScoped<IUserMapper, UserMapper>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
