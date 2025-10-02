@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards, Res, UseInterceptors, Session } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards, Res, UseInterceptors, Session, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -70,6 +70,19 @@ export class AuthController {
             if (err) console.error(err);
         });
         return { message: 'Logged out' };
+    }
+
+    @Get('/get-verifycode')
+      @Roles()
+      @UseGuards(RolesGuard)
+      getVerifyCode(@Request() req){
+        
+        return this.authService.getVerifyCode(req.user.uid)
+    }
+
+    @Get('/verify/:code')
+    verify(@Param('code') code: string) {
+        return this.authService.verify(code)
     }
 
 }

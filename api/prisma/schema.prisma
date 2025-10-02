@@ -8,16 +8,27 @@ datasource db {
 }
 
 model User {
-    uid          Int           @id @default(autoincrement())
-    createAt     DateTime      @default(now())
-    updatedAt    DateTime      @updatedAt
+    uid          Int          @id @default(autoincrement())
+    createAt     DateTime     @default(now())
+    updatedAt    DateTime     @updatedAt
     name         String?
     image        String?
-    email        String   @unique
+    email        String       @unique
     passwordHash String?
     AuthProvider AuthProviderType
     role         Roles        @default(user)
+    verifyCode   VerifyCode? 
+    isVerified   Boolean      @default(false)
 }
+
+model VerifyCode {
+    id        Int      @id @default(autoincrement())
+    code      String   @unique
+    userId    Int      @unique
+    user      User     @relation(fields: [userId], references: [uid])
+    expiredAt DateTime
+}
+
 
 enum AuthProviderType {
     GOOGLE

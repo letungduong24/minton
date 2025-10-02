@@ -1,8 +1,10 @@
-import { Injectable, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/modules/users/users.service';
 import { PasswordHelper } from 'src/utils/password.helper';
 import { SignupWithCredentials } from './dto/signup.dto';
 import { SigninWithCredentials } from './dto/signin.dto';
+import { PrismaService } from 'src/shared/prisma/prisma.services';
+import { VerifyCodeHelper } from 'src/utils/verifycode.helper';
 
 
 @Injectable()
@@ -10,6 +12,7 @@ export class AuthService {
 
     constructor(
         private userService: UsersService,
+        private prisma: PrismaService
     ) {}
 
     async signUp(signupWithCredentials: SignupWithCredentials){
@@ -74,6 +77,71 @@ export class AuthService {
             ...(image && { image }), 
             });
 
+        }
+    }
+
+    async getVerifyCode(userId: number) {
+        const user = await this.prisma.user.findUnique({
+            where: { uid: userId },
+            include: { verifyCode: true }
+        });
+
+        if (!user) throw new NotFoundException('User does not exist');
+        if (user.isVerified) throw new ConflictException('User is already verified');
+
+        if (user.verifyCode) {
+            if (!VerifyCodeHelper.isExpired(user.verifyCode)) {
+                return user.verifyCode.code; 
+            }
+        const updated = await this.prisma.verifyCode.update({
+                where: { id: user.verifyCode.id },
+                data: VerifyCodeHelper.createForUser(userId)
+            });
+            return updated.code;
+        }
+
+        const newVerifyCode = await this.prisma.verifyCode.create({
+            data: VerifyCodeHelper.createForUser(userId)
+        });
+        return newVerifyCode.code;
+    }
+
+
+
+    async verify(code: string) {
+        try {
+        const verifyCode = await this.prisma.verifyCode.findUnique({
+            where: {
+            code
+            },
+        });
+
+        if(!verifyCode){
+            throw new NotFoundException('Verify code is not exist')
+        }
+        
+        if (VerifyCodeHelper.isExpired(verifyCode)) {
+            throw new NotFoundException('Verify code is expired');
+        }
+
+        await this.prisma.user.update({
+            where: {
+                uid: verifyCode.userId
+            },
+            data: {
+                isVerified: true,
+                verifyCode: {
+                    delete: true
+                }
+            }
+        })
+
+        return {
+            messsage: "User verified successfully"
+        }
+
+        } catch (error) {
+        throw error;
         }
     }
     

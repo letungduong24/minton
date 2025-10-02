@@ -4,6 +4,9 @@ import { UpdateProfileDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/shared/prisma/prisma.services';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from 'src/shared/prisma/prisma.error';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
+import { VerifyCodeHelper } from 'src/utils/verifycode.helper';
 
 @Injectable()
 export class UsersService {
@@ -17,8 +20,14 @@ export class UsersService {
           image: dto.image,
           email: dto.email,
           passwordHash: dto.passwordHash,
-          AuthProvider: 'CREDENTIALS'
+          AuthProvider: 'CREDENTIALS',
+          verifyCode: {
+            create: VerifyCodeHelper.createNested()
+          }
         },
+        include: {
+          verifyCode: true
+        }
       });
     } catch (error) {
       if (
@@ -38,7 +47,8 @@ export class UsersService {
           name: dto.name,
           image: dto.image,
           email: dto.email,
-          AuthProvider: 'GOOGLE'
+          AuthProvider: 'GOOGLE',
+          isVerified: true
         },
       });
     } catch (error) {
@@ -124,4 +134,5 @@ export class UsersService {
       throw error;
     }
   }
+
 }
