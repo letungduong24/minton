@@ -7,14 +7,19 @@ import { PrismaError } from 'src/shared/prisma/prisma.error';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { VerifyCodeHelper } from 'src/utils/verifycode.helper';
+import { ConfigService } from '@nestjs/config';
+import { use } from 'passport';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService
+  ) {}
 
   async create(dto: CreateUserByCredentialsDto) {
     try {
-      return await this.prisma.user.create({
+      const user = await this.prisma.user.create({
         data: {
           name: dto.name,
           image: dto.image,
@@ -29,6 +34,13 @@ export class UsersService {
           verifyCode: true
         }
       });
+      const serverVerifyUrl = this.configService.get<string>('SERVER_VERIFY_URL')
+      const verifyLink = `${serverVerifyUrl}/${user.verifyCode?.code}`
+      
+      return {
+        user,
+        verifyLink
+      }
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

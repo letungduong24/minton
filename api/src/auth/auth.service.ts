@@ -5,6 +5,7 @@ import { SignupWithCredentials } from './dto/signup.dto';
 import { SigninWithCredentials } from './dto/signin.dto';
 import { PrismaService } from 'src/shared/prisma/prisma.services';
 import { VerifyCodeHelper } from 'src/utils/verifycode.helper';
+import { MailerService } from '@nestjs-modules/mailer';
 
 
 @Injectable()
@@ -12,17 +13,31 @@ export class AuthService {
 
     constructor(
         private userService: UsersService,
-        private prisma: PrismaService
+        private prisma: PrismaService,
+        private mailerService: MailerService
     ) {}
 
     async signUp(signupWithCredentials: SignupWithCredentials){
         const hashedPassword = await PasswordHelper.Hash(signupWithCredentials.password)
-        const user = await this.userService.create({
+        const data = await this.userService.create({
             name: signupWithCredentials.name,
             email: signupWithCredentials.email,
             passwordHash: hashedPassword,
         })
-        const {passwordHash, ...userInfo} = user
+        const verifyLink = data.verifyLink
+        const {passwordHash, ...userInfo} = data.user
+        this.mailerService
+            .sendMail({
+                to: userInfo.email,
+                subject: 'Xác thực tài khoản của bạn',
+                template: 'verify', 
+                context: {
+                    name: userInfo.name, 
+                    verifyLink, 
+                },
+            })
+            .then(() => {})
+            .catch(() => {});
         return userInfo
     }
 
