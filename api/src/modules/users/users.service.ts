@@ -36,9 +36,9 @@ export class UsersService {
       });
       const serverVerifyUrl = this.configService.get<string>('SERVER_VERIFY_URL')
       const verifyLink = `${serverVerifyUrl}/${user.verifyCode?.code}`
-      
+      const {verifyCode, ...userInfo} = user
       return {
-        user,
+        userInfo,
         verifyLink
       }
     } catch (error) {

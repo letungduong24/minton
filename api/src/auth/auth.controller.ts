@@ -1,19 +1,21 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards, Res, UseInterceptors, Session, Param } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards, Res, UseInterceptors, Session, Param, Response } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LocalGuard } from './guards/local.guard';
 import { SigninWithCredentials } from './dto/signin.dto';
 import { SignupWithCredentials } from './dto/signup.dto';
 import { Roles } from './decorators/roles.decorator';
-import { RolesGuard } from './guards/role.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
-
+import { AuthGuard } from './guards/auth.guard';
+import { VerifiedGuard } from './guards/verify.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { ConfigService } from '@nestjs/config';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
     constructor(
         private authService: AuthService,
+        private configService: ConfigService
     ) {}
 
     @UseGuards(GoogleAuthGuard)
@@ -26,12 +28,13 @@ export class AuthController {
     @Get('google/callback')
     async googleCallback(
         @Request() request,
-        @Session() session: Record<string, any>
+        @Session() session: Record<string, any>,
+        @Response() res
     ){
         const user = request.user
         session.user = user.uid
-        console.log(user)
-        return user
+        const clientUrl = this.configService.get<string>('CLIENT_URL');
+        res.redirect(`${clientUrl}?success=true`);
     }
     
 
@@ -59,7 +62,7 @@ export class AuthController {
 
     @Get('me')
     @Roles()
-    @UseGuards(RolesGuard)
+    @UseGuards(AuthGuard)
     me(@Request() req) {
         return req.user;
     }
@@ -72,12 +75,12 @@ export class AuthController {
         return { message: 'Logged out' };
     }
 
-    @Get('/get-verifycode')
-      @Roles()
-      @UseGuards(RolesGuard)
+    @Get('/resend-verifylink')
+      @Roles('admin')
+      @UseGuards(AuthGuard, VerifiedGuard, RolesGuard)
       getVerifyCode(@Request() req){
         
-        return this.authService.getVerifyCode(req.user.uid)
+        return this.authService.getVerifyLink(req.user.uid)
     }
 
     @Get('/verify/:code')

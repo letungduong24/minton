@@ -6,6 +6,8 @@ import { SigninWithCredentials } from './dto/signin.dto';
 import { PrismaService } from 'src/shared/prisma/prisma.services';
 import { VerifyCodeHelper } from 'src/utils/verifycode.helper';
 import { MailerService } from '@nestjs-modules/mailer';
+import { MailHelper } from 'src/utils/mail.helper';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
@@ -14,7 +16,8 @@ export class AuthService {
     constructor(
         private userService: UsersService,
         private prisma: PrismaService,
-        private mailerService: MailerService
+        private mailerService: MailerService,
+        private configService: ConfigService
     ) {}
 
     async signUp(signupWithCredentials: SignupWithCredentials){
@@ -25,19 +28,8 @@ export class AuthService {
             passwordHash: hashedPassword,
         })
         const verifyLink = data.verifyLink
-        const {passwordHash, ...userInfo} = data.user
-        this.mailerService
-            .sendMail({
-                to: userInfo.email,
-                subject: 'Xác thực tài khoản của bạn',
-                template: 'verify', 
-                context: {
-                    name: userInfo.name, 
-                    verifyLink, 
-                },
-            })
-            .then(() => {})
-            .catch(() => {});
+        const {passwordHash, ...userInfo} = data.userInfo
+        MailHelper.sendVerify(this.mailerService, userInfo, verifyLink)
         return userInfo
     }
 
@@ -56,10 +48,10 @@ export class AuthService {
                 const {passwordHash, ...userInfo} = user
                 return userInfo
             }
-            throw new UnauthorizedException('Invalid credentials')
+            throw new UnauthorizedException('Email hoặc mật khẩu không tồn tại')
         }
         else {
-            throw new NotAcceptableException("This is Google User")
+            throw new NotAcceptableException("Đây là tài khoản đăng nhập bằng Google")
         }
     }
 
@@ -95,7 +87,8 @@ export class AuthService {
         }
     }
 
-    async getVerifyCode(userId: number) {
+    async getVerifyLink(userId: number) {
+        const serverVerifyUrl = this.configService.get<string>('SERVER_VERIFY_URL')
         const user = await this.prisma.user.findUnique({
             where: { uid: userId },
             include: { verifyCode: true }
@@ -106,20 +99,34 @@ export class AuthService {
 
         if (user.verifyCode) {
             if (!VerifyCodeHelper.isExpired(user.verifyCode)) {
-                return user.verifyCode.code; 
+                const verifyLink = serverVerifyUrl + user.verifyCode.code
+                MailHelper.sendVerify(this.mailerService, user, verifyLink)
+                return {
+                    message: "Verify link sent"
+                }; 
             }
-        const updated = await this.prisma.verifyCode.update({
+            const updated = await this.prisma.verifyCode.update({
                 where: { id: user.verifyCode.id },
                 data: VerifyCodeHelper.createForUser(userId)
             });
-            return updated.code;
+            const verifyLink = serverVerifyUrl + updated.code
+            MailHelper.sendVerify(this.mailerService, user, verifyLink)
+            return {
+                message: "Verify link sent"
+            }; 
         }
 
         const newVerifyCode = await this.prisma.verifyCode.create({
             data: VerifyCodeHelper.createForUser(userId)
         });
-        return newVerifyCode.code;
+        const verifyLink = serverVerifyUrl + newVerifyCode.code
+        MailHelper.sendVerify(this.mailerService, user, verifyLink)
+        return {
+            message: "Verify link sent"
+        }; 
     }
+
+
 
 
 

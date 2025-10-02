@@ -1,10 +1,48 @@
-import React from 'react'
-import { IoMailOutline } from "react-icons/io5";
-import { IoKeyOutline } from "react-icons/io5";
-import { FaGoogle } from "react-icons/fa";
-import Link from 'next/link';
+'use client'
+
+import React, { useState } from 'react'
+import { FaGoogle } from "react-icons/fa"
+import Link from 'next/link'
+import useAuthStore from '@/store/auth.store'
+import { useRouter } from 'next/navigation'
 
 const Login = () => {
+  const router = useRouter()
+
+  const { signin, signInWithGoogle } = useAuthStore()
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await signin(formData)
+      router.push('/')
+    } catch (error) {
+      
+    }
+  }
+
+  const handleLoginWithGoogle = async () => {
+    try {
+      await signInWithGoogle()
+      router.push('/')
+    } catch (error) {
+      
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col w-full bg-white relative overflow-hidden p-4">
       <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_center,_rgba(59,130,246,0.5)_0%,_transparent_70%)]" />
@@ -14,27 +52,56 @@ const Login = () => {
             <h2 className='font-bold text-xl'>minton.</h2>
             <h2 className='font-bold text-3xl'>Đăng nhập</h2>
           </div>
-          <form className='w-full flex flex-col gap-3' action="">
+
+          {/* Form */}
+          <form className='w-full flex flex-col gap-3' onSubmit={handleSubmit}>
             <div className="w-full flex flex-col gap-1">
-              <label className='font-bold text-sm ' htmlFor="email">Email</label>
-              <input className='px-3 py-2 flex-1 outline-none border-1 border-gray-500 rounded-xl focus:shadow-blue-900 focus:shadow transition-all duration-300' name='email' id='email' type="email" placeholder='example@gmail.com'/>
+              <label className='font-bold text-sm' htmlFor="email">Email</label>
+              <input
+                className='px-3 py-2 flex-1 outline-none border border-gray-500 rounded-xl focus:shadow-blue-900 focus:shadow transition-all duration-300'
+                name='email'
+                id='email'
+                type="email"
+                placeholder='example@gmail.com'
+                value={formData.email}
+                onChange={handleChange}
+              />
             </div>
+
             <div className="w-full flex flex-col gap-1">
-              <label className='font-bold text-sm  ' htmlFor="password">Mật khẩu</label>
-              <input className='px-3 py-2 flex-1 outline-none border-1 border-gray-500 rounded-xl focus:shadow-blue-900 focus:shadow transition-all duration-300' name='password' id='password' type="password" placeholder='Mật khẩu'/>
+              <label className='font-bold text-sm' htmlFor="password">Mật khẩu</label>
+              <input
+                className='px-3 py-2 flex-1 outline-none border border-gray-500 rounded-xl focus:shadow-blue-900 focus:shadow transition-all duration-300'
+                name='password'
+                id='password'
+                type="password"
+                placeholder='Mật khẩu'
+                value={formData.password}
+                onChange={handleChange}
+              />
             </div>
+
             <div className="text-center text-sm font-bold">
               <Link href={'/'} className='underline hover:text-blue-900 transition-all duration-300'>Quên mật khẩu?</Link>
-              <p className=''>Chưa có tài khoản? <Link href={'/auth/login'} className='underline hover:text-blue-900 transition-all duration-300'>Đăng ký</Link></p>
+              <p>Chưa có tài khoản? <Link href={'/auth/register'} className='underline hover:text-blue-900 transition-all duration-300'>Đăng ký</Link></p>
             </div>
+
             <div className="w-full">
-              <button className='bg-blue-900 transition-all hover:scale-105 duration-300 cursor-pointer w-full text-white rounded-2xl p-3 font-bold text-md' type='submit'>Đăng nhập</button>
+              <button className='bg-blue-900 transition-all hover:scale-105 duration-300 cursor-pointer w-full text-white rounded-2xl p-3 font-bold text-md' type='submit'>
+                Đăng nhập
+              </button>
             </div>
+
             <div className="text-center text-sm font-bold">
               <p>Hoặc đăng nhập với</p>
             </div>
+
             <div className="w-full">
-              <button className='flex items-center gap-1 justify-center bg-white border-gray-400 border-1 transition-all hover:scale-105 duration-300 cursor-pointer w-full rounded-2xl p-3 font-bold text-md' type='submit'>
+              <button
+               className='flex items-center gap-1 justify-center bg-white border border-gray-400 transition-all hover:scale-105 duration-300 cursor-pointer w-full rounded-2xl p-3 font-bold text-md' 
+               type='button'
+               onClick={handleLoginWithGoogle}
+              >
                 <FaGoogle />
                 Google
               </button>
@@ -43,7 +110,6 @@ const Login = () => {
         </div>
       </div>
     </div>
-
   )
 }
 

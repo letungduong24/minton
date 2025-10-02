@@ -8,13 +8,14 @@ import { PrismaService } from '../shared/prisma/prisma.services';
 import { AuthController } from './auth.controller';
 import { RedisModule } from './cache/redis.module';
 import { UserCacheModule } from './cache/user/user.cache.module';
-import { RolesGuard } from './guards/role.guard';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { MailerModule, MailerService } from '@nestjs-modules/mailer';
+import { VerifiedGuard } from './guards/verify.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
-  providers: [PrismaService, AuthService, LocalStrategy, LocalGuard, GoogleStrategy, GoogleAuthGuard, PrismaService, RolesGuard],
+  providers: [PrismaService, AuthService, LocalStrategy, LocalGuard, GoogleStrategy, GoogleAuthGuard, PrismaService, RolesGuard, VerifiedGuard],
   controllers: [AuthController],
   imports: [
     PassportModule,

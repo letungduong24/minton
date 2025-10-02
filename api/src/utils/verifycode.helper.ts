@@ -29,5 +29,5 @@ static createNested() {
   static isExpired(verifyCode: VerifyCode): boolean {
     return dayjs().isAfter(dayjs(verifyCode.expiredAt));
   }
-
 }
+
