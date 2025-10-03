@@ -7,6 +7,8 @@ import {RedisStore} from "connect-redis"
 import session from "express-session"
 import {createClient} from "redis"
 import { ConfigService } from '@nestjs/config';
+import { VerifiedExceptionFilter } from './custom-exception/verify/verify.filter';
+import { ThrottlerExceptionFilter } from './custom-exception/throttler/throttler.filter';
 
 async function bootstrap() {
 
@@ -73,6 +75,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // custom exception filter 
+  app.useGlobalFilters(new VerifiedExceptionFilter());
+  app.useGlobalFilters(new ThrottlerExceptionFilter());
 
   const PORT = configService.get<number>('PORT') || 3000;
   await app.listen(PORT ?? 3000);

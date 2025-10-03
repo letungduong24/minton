@@ -18,6 +18,7 @@ const AuthGuard = ({children}: AuthGuardProps) => {
       router.push('/auth/login')
       toast.error('Vui lòng đăng nhập để tiếp tục!')
     }
+
   }, [user, router])
 
   if (!user) {

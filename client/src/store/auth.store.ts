@@ -6,13 +6,17 @@ const useAuthStore = create<AuthState>((set) => ({
     user: null,
     loading: true,
     signInLoading: false,
+    signUpLoading: false,
+    getVerifyLinkLoading: false,
 
     checkAuth: async () => {
         try {
             const response = await api.get('/auth/me');
-            set({ user: response.data });
+            set({ user: response.data});
         } catch (error: any) {
-            set({ user: null });
+            if(error.response.data.user){
+                set({ user: error.response.data.user });
+            }
         } finally {
             set({ loading: false });
         }
@@ -28,10 +32,27 @@ const useAuthStore = create<AuthState>((set) => ({
             toast.success('Đăng nhập thành công!')
         } catch (error: any) {
             set({ user: null });
-            toast.error("Thông tin đăng nhập không hợp lệ!")
+            toast.error(error.response.data.message)
             throw new Error()
         } finally{
             set({signInLoading: false})
+        }
+    },
+
+    // Sign up
+    signup: async (credentials: SignUpProps) => {
+        set({signUpLoading: true})
+        console.log(credentials)
+        try {
+            const response = await api.post('/auth/register', credentials)
+            set({ user: response.data });
+            toast.success('Đăng ký thành công!')
+        } catch (error: any) {
+            set({ user: null });
+            toast.error(error.response.data.message)
+            throw new Error()
+        } finally{
+            set({signUpLoading: false})
         }
     },
 
@@ -41,8 +62,8 @@ const useAuthStore = create<AuthState>((set) => ({
             await api.post('/auth/logout');
             set({ user: null});
             toast.success('Đăng xuất thành công!')
-        } catch (error) {
-            console.error('Đăng xuất thất bại');
+        } catch (error: any) {
+            toast.error(error.response.data.message)
         }
     },
 
@@ -52,12 +73,26 @@ const useAuthStore = create<AuthState>((set) => ({
             window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google/login`
         } catch (error: any) {
             set({ user: null });
-            toast.error("Thông tin đăng nhập không hợp lệ!")
+            toast.error(error.response.data.message)
             throw new Error()
         } finally{
             set({signInLoading: false})
         }
     },
+
+    getVerifyLink: async () => {
+        set({getVerifyLinkLoading: true})
+        try {
+            const response = await api.get('/auth/resend-verifylink')
+            toast.success(response.data?.message)
+        } catch (error: any) {
+            toast.error(error.response.data.message)
+            throw new Error()
+        } finally{
+            set({getVerifyLinkLoading: false})
+        }
+    },
+
 
     // // Update profile
     // updateProfile: async (info: UpdateProfileProps) => {

@@ -5,8 +5,10 @@ import { FaGoogle } from "react-icons/fa"
 import Link from 'next/link'
 import useAuthStore from '@/store/auth.store'
 import { useRouter } from 'next/navigation'
+import { Metadata } from 'next'
 
 const Login = () => {
+  
   const router = useRouter()
 
   const { signin, signInWithGoogle } = useAuthStore()
@@ -28,7 +30,6 @@ const Login = () => {
     e.preventDefault()
     try {
       await signin(formData)
-      router.push('/')
     } catch (error) {
       
     }
@@ -44,6 +45,7 @@ const Login = () => {
   }
 
   return (
+    <>
     <div className="flex-1 flex flex-col w-full bg-white relative overflow-hidden p-4">
       <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_center,_rgba(59,130,246,0.5)_0%,_transparent_70%)]" />
       <div className="flex-1 flex items-center justify-center">
@@ -110,6 +112,7 @@ const Login = () => {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

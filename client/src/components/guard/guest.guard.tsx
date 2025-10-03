@@ -14,7 +14,7 @@ const GuestGuard = ({children}: GuestGuardProps) => {
 
   useEffect(() => {
     if (user) {
-      router.push('/home')
+      router.push('/')
     }
   }, [user, router])
 

@@ -10,6 +10,8 @@ import { AuthGuard } from './guards/auth.guard';
 import { VerifiedGuard } from './guards/verify.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { ConfigService } from '@nestjs/config';
+import { Throttle } from '@nestjs/throttler';
+import { THROTTLER } from 'src/constants/throttler.constants';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
@@ -41,7 +43,7 @@ export class AuthController {
     @UseGuards(LocalGuard)
     @Post('login')
     @ApiBody({ type: SigninWithCredentials })
-    async login(
+    login(
         @Request() request,
         @Session() session: Record<string, any>
     ) {
@@ -61,31 +63,34 @@ export class AuthController {
     }
 
     @Get('me')
-    @Roles()
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, VerifiedGuard)
     me(@Request() req) {
         return req.user;
     }
 
     @Post('logout')
-    logout(@Session() session: Record<string, any>) {
-        session.destroy((err) => {
+    async logout(@Session() session: Record<string, any>) {
+        await session.destroy((err) => {
             if (err) console.error(err);
         });
         return { message: 'Logged out' };
     }
 
     @Get('/resend-verifylink')
-      @Roles('admin')
-      @UseGuards(AuthGuard, VerifiedGuard, RolesGuard)
-      getVerifyCode(@Request() req){
-        
-        return this.authService.getVerifyLink(req.user.uid)
+    @UseGuards(AuthGuard)
+    @Throttle(THROTTLER.VERIFY)
+    async  getVerifyLink(@Request() req){
+        return await this.authService.getVerifyLink(req.user.uid)
     }
 
     @Get('/verify/:code')
-    verify(@Param('code') code: string) {
-        return this.authService.verify(code)
+    async verify(
+        @Param('code') code: string,
+        @Response() res
+    ) {
+        const clientUrl = this.configService.get<string>('CLIENT_URL');
+        await this.authService.verify(code)
+        res.redirect(`${clientUrl}?verified=true`);
     }
 
 }

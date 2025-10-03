@@ -7,9 +7,20 @@ import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import path from 'path';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { SessionThrottlerGuard } from './auth/guards/session-throttler.guard';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 10000,
+          limit: 10,
+        },
+      ],
+    }),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -26,7 +37,6 @@ import path from 'path';
         defaults: {
           from: `"minton." <${configService.get('GMAIL_USER')}>`,
         },
-        preview: true,
         template: {
           dir: path.join(process.cwd(), 'template'),
           adapter: new HandlebarsAdapter(),
@@ -47,6 +57,12 @@ import path from 'path';
     
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
+  ],
 })
 export class AppModule {}

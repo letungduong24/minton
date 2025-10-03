@@ -15,6 +15,12 @@ export default function Home() {
     type: 'success'
   })
 
+  useQueryToast({
+    param: 'verified',
+    message: 'Xác minh tài khoản thành công',
+    type: 'success'
+  })
+
   return (
     <>
       <p>Hi, {user?.name || 'Khách'}</p>

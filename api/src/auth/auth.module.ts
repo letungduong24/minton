@@ -13,9 +13,11 @@ import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { MailerModule, MailerService } from '@nestjs-modules/mailer';
 import { VerifiedGuard } from './guards/verify.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { SessionThrottlerGuard } from './guards/session-throttler.guard';
 
 @Module({
-  providers: [PrismaService, AuthService, LocalStrategy, LocalGuard, GoogleStrategy, GoogleAuthGuard, PrismaService, RolesGuard, VerifiedGuard],
+  providers: [PrismaService, AuthService, LocalStrategy, LocalGuard, GoogleStrategy, GoogleAuthGuard, PrismaService, RolesGuard, VerifiedGuard, ThrottlerGuard],
   controllers: [AuthController],
   imports: [
     PassportModule,

@@ -46,7 +46,7 @@ export class UsersService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === PrismaError.DUPLICATE
       ) {
-        throw new ConflictException('User has been registered');
+        throw new ConflictException('Người dùng đã tồn tại');
       }
       throw error;
     }

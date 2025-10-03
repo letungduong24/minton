@@ -48,7 +48,7 @@ export class AuthService {
                 const {passwordHash, ...userInfo} = user
                 return userInfo
             }
-            throw new UnauthorizedException('Email hoặc mật khẩu không tồn tại')
+            throw new UnauthorizedException('Email hoặc mật khẩu không đúng!')
         }
         else {
             throw new NotAcceptableException("Đây là tài khoản đăng nhập bằng Google")
@@ -94,25 +94,25 @@ export class AuthService {
             include: { verifyCode: true }
         });
 
-        if (!user) throw new NotFoundException('User does not exist');
-        if (user.isVerified) throw new ConflictException('User is already verified');
+        if (!user) throw new NotFoundException('Người dùng không tồn tại');
+        if (user.isVerified) throw new ConflictException('Người dùng đã được xác minh');
 
         if (user.verifyCode) {
             if (!VerifyCodeHelper.isExpired(user.verifyCode)) {
-                const verifyLink = serverVerifyUrl + user.verifyCode.code
+                const verifyLink = serverVerifyUrl + "/" + user.verifyCode.code
                 MailHelper.sendVerify(this.mailerService, user, verifyLink)
                 return {
-                    message: "Verify link sent"
+                    message: `Đã gửi liên kết xác minh tài khoản đến email ${user.email}`
                 }; 
             }
             const updated = await this.prisma.verifyCode.update({
                 where: { id: user.verifyCode.id },
                 data: VerifyCodeHelper.createForUser(userId)
             });
-            const verifyLink = serverVerifyUrl + updated.code
+            const verifyLink = serverVerifyUrl + "/" + updated.code
             MailHelper.sendVerify(this.mailerService, user, verifyLink)
             return {
-                message: "Verify link sent"
+                message: `Đã gửi liên kết xác minh tài khoản đến email ${user.email}`
             }; 
         }
 
@@ -125,10 +125,6 @@ export class AuthService {
             message: "Verify link sent"
         }; 
     }
-
-
-
-
 
     async verify(code: string) {
         try {
@@ -159,7 +155,8 @@ export class AuthService {
         })
 
         return {
-            messsage: "User verified successfully"
+            messsage: "User verified successfully",
+            code: verifyCode
         }
 
         } catch (error) {
