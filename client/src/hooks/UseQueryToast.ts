@@ -6,11 +6,10 @@ import { toast } from "sonner";
 
 interface UseQueryToastProps {
   param: string;      
-  message: string;    
   type?: "success" | "error" | "info" | "warning";
 }
 
-export function useQueryToast({ param, message, type = "success" }: UseQueryToastProps) {
+export function useQueryToast({ param, type = "success" }: UseQueryToastProps) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -18,18 +17,18 @@ export function useQueryToast({ param, message, type = "success" }: UseQueryToas
     if (value) {
       switch (type) {
         case "success":
-          toast.success(message);
+          toast.success(value);
           break;
         case "error":
-          toast.error(message);
+          toast.error(value);
           break;
         case "info":
-          toast(message); 
+          toast(value); 
           break;
         case "warning":
-          toast.warning(message);
+          toast.warning(value);
           break;
       }
     }
-  }, [searchParams, param, message, type]);
+  }, [searchParams, param, type]);
 }

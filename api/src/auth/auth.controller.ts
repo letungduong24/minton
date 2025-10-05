@@ -36,7 +36,7 @@ export class AuthController {
         const user = request.user
         session.user = user.uid
         const clientUrl = this.configService.get<string>('CLIENT_URL');
-        res.redirect(`${clientUrl}?success=true`);
+        res.redirect(`${clientUrl}?success=Đăng nhập thành công`);
     }
     
 
@@ -89,8 +89,8 @@ export class AuthController {
         @Response() res
     ) {
         const clientUrl = this.configService.get<string>('CLIENT_URL');
-        await this.authService.verify(code)
-        res.redirect(`${clientUrl}?verified=true`);
+        const response = await this.authService.verify(code)
+        res.redirect(`${clientUrl}/?${response.param}=${response.message}`);
     }
 
 }

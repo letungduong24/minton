@@ -7,6 +7,7 @@ const useAuthStore = create<AuthState>((set) => ({
     loading: true,
     signInLoading: false,
     signUpLoading: false,
+    signOutLoading: false,
     getVerifyLinkLoading: false,
 
     checkAuth: async () => {
@@ -33,7 +34,6 @@ const useAuthStore = create<AuthState>((set) => ({
         } catch (error: any) {
             set({ user: null });
             toast.error(error.response.data.message)
-            throw new Error()
         } finally{
             set({signInLoading: false})
         }
@@ -50,7 +50,6 @@ const useAuthStore = create<AuthState>((set) => ({
         } catch (error: any) {
             set({ user: null });
             toast.error(error.response.data.message)
-            throw new Error()
         } finally{
             set({signUpLoading: false})
         }
@@ -58,12 +57,15 @@ const useAuthStore = create<AuthState>((set) => ({
 
     // Sign out
     signout: async () => {
+        set({ signOutLoading: true })
         try {
             await api.post('/auth/logout');
             set({ user: null});
             toast.success('Đăng xuất thành công!')
         } catch (error: any) {
             toast.error(error.response.data.message)
+        } finally {
+            set({ signOutLoading: false })
         }
     },
 
@@ -74,7 +76,6 @@ const useAuthStore = create<AuthState>((set) => ({
         } catch (error: any) {
             set({ user: null });
             toast.error(error.response.data.message)
-            throw new Error()
         } finally{
             set({signInLoading: false})
         }
@@ -87,7 +88,6 @@ const useAuthStore = create<AuthState>((set) => ({
             toast.success(response.data?.message)
         } catch (error: any) {
             toast.error(error.response.data.message)
-            throw new Error()
         } finally{
             set({getVerifyLinkLoading: false})
         }

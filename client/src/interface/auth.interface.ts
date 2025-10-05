@@ -3,6 +3,7 @@ interface AuthState {
     loading: boolean
     signInLoading: boolean
     signUpLoading: boolean
+    signOutLoading: boolean
     getVerifyLinkLoading: boolean
     checkAuth: () => Promise<void>
     signout: () => Promise<void>

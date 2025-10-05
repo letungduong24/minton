@@ -1,11 +1,11 @@
 import React, { ReactNode } from 'react'
 import Navbar from '../ui/navbar'
 
-type NavbarProviderProps = {
+type NavbarWrapperProps = {
     children: ReactNode
 }
 
-const NavbarProvider = ({children}: NavbarProviderProps) => {
+const NavbarWrapper = ({children}: NavbarWrapperProps) => {
   return (
     <div className='min-h-screen flex flex-col'>
         <Navbar />
@@ -14,4 +14,4 @@ const NavbarProvider = ({children}: NavbarProviderProps) => {
   )
 }
 
-export default NavbarProvider
+export default NavbarWrapper

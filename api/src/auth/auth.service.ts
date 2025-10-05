@@ -119,10 +119,10 @@ export class AuthService {
         const newVerifyCode = await this.prisma.verifyCode.create({
             data: VerifyCodeHelper.createForUser(userId)
         });
-        const verifyLink = serverVerifyUrl + newVerifyCode.code
+        const verifyLink = serverVerifyUrl + "/" + newVerifyCode.code
         MailHelper.sendVerify(this.mailerService, user, verifyLink)
         return {
-            message: "Verify link sent"
+            message: `Đã gửi liên kết xác minh tài khoản đến email ${user.email}`
         }; 
     }
 
@@ -135,11 +135,17 @@ export class AuthService {
         });
 
         if(!verifyCode){
-            throw new NotFoundException('Verify code is not exist')
+            return {
+                param: "error",
+                message: "Phiên xác minh đã hết hạn"
+            }
         }
         
         if (VerifyCodeHelper.isExpired(verifyCode)) {
-            throw new NotFoundException('Verify code is expired');
+            return {
+                param: "error",
+                message: "Phiên xác minh đã hết hạn"
+            }
         }
 
         await this.prisma.user.update({
@@ -155,8 +161,8 @@ export class AuthService {
         })
 
         return {
-            messsage: "User verified successfully",
-            code: verifyCode
+            param: "success",
+            message: "Xác minh thành công"
         }
 
         } catch (error) {
